@@ -114,7 +114,7 @@ class CoCoDataset(data.Dataset):
         
     def __getitem__(self, index):
         # obtain image and caption if in training mode
-        if self.mode in ['train', 'val'] ## == 'train':
+        if self.mode in ['train', 'val']: ## == 'train':
             ann_id = self.ids[index]
             caption = self.coco.anns[ann_id]['caption']
             img_id = self.coco.anns[ann_id]['image_id']
