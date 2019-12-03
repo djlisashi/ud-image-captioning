@@ -143,7 +143,6 @@ class CoCoDataset(data.Dataset):
             return image, caption
 
         
-        #####################
         if self.mode in ['val']: ## == 'train':
             ann_id = self.ids[index]
             caption = self.coco.anns[ann_id]['caption']
@@ -157,8 +156,7 @@ class CoCoDataset(data.Dataset):
             
             return orig_image, image, caption
         
-        
-        ######################
+
         # obtain image if in test mode
         else:
             path = self.paths[index]
