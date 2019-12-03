@@ -109,13 +109,19 @@ class CoCoDataset(data.Dataset):
             print('Obtaining caption lengths...')
             all_tokens = [nltk.tokenize.word_tokenize(str(self.coco.anns[self.ids[index]]['caption']).lower()) for index in tqdm(np.arange(len(self.ids)))]
             self.caption_lengths = [len(token) for token in all_tokens]
+            
+        if self.mode == 'val':
+            self.coco = COCO(annotations_file)
+            self.ids = list(self.coco.anns.keys())
+            
+            
         else:
             test_info = json.loads(open(annotations_file).read())
             self.paths = [item['file_name'] for item in test_info['images']]
         
     def __getitem__(self, index):
         # obtain image and caption if in training mode
-        if self.mode in ['train', 'val']: ## == 'train':
+        if self.mode in ['train']: ## == 'train':
             ann_id = self.ids[index]
             caption = self.coco.anns[ann_id]['caption']
             img_id = self.coco.anns[ann_id]['image_id']
@@ -136,6 +142,23 @@ class CoCoDataset(data.Dataset):
             # return pre-processed image and caption tensors
             return image, caption
 
+        
+        #####################
+        if self.mode in ['val']: ## == 'train':
+            ann_id = self.ids[index]
+            caption = self.coco.anns[ann_id]['caption']
+            img_id = self.coco.anns[ann_id]['image_id']
+            path = self.coco.loadImgs(img_id)[0]['file_name']
+
+            # Convert image to tensor and pre-process using transform
+            PIL_image = Image.open(os.path.join(self.img_folder, path)).convert('RGB')
+            orig_image = np.array(PIL_image)
+            image = self.transform(PIL_image)
+            
+            return orig_image, image, caption
+        
+        
+        ######################
         # obtain image if in test mode
         else:
             path = self.paths[index]
@@ -155,7 +178,7 @@ class CoCoDataset(data.Dataset):
         return indices
 
     def __len__(self):
-        if self.mode == 'train':
+        if self.mode in ['train', 'val']:
             return len(self.ids)
         else:
             return len(self.paths)
